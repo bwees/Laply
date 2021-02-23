@@ -5,6 +5,7 @@ document.getElementById("devicePort").options.length = 0;
 
 ws.onopen = function () {
     ws.send("SERIAL AVAILABLE")
+    ws.send("DATA")
 };
 
 var data = null;

@@ -30,7 +30,6 @@ class Race extends EventEmitter {
                 }
             });
         }
-        this.updateStandings()
     }
 
     recordLap(index, min) {
@@ -42,15 +41,6 @@ class Race extends EventEmitter {
             this.lapTimers[index].on('tick', (time) => {
                 this.emit('tick', {datatype: "timerTick", pilot: index, time: time})
             })
-
-            this.lapTable.table.unshift({ 
-                name: this.pilots[index].name, 
-                lapTime: null, 
-                lapNum: this.laps[index].length, 
-                datatype: "lap" 
-            })
-            this.emit("lap", this.lapTable)
-
         } else {
             pLaps.push(new Date() - this.pilotStartTimes[index])
             var lapTime = this.getLapTime(index)
@@ -72,7 +62,7 @@ class Race extends EventEmitter {
             }
 
         }
-
+        this.updateStandings()
     }
 
     async updateStandings() {
@@ -90,7 +80,19 @@ class Race extends EventEmitter {
             return b.num - a.num || b.time - a.time;
         });
 
-        console.log(standings)
+        this.emit("standings", {datatype: "standings", standings: standings})
+    }
+
+    resetStandings(pilots) {
+        var standings = []
+        pilots.forEach((pilot, index) => {
+            standings.push({
+                name: pilot.name,
+                num: 0,
+                time: 0
+            })
+        })
+        return {datatype: "standings", standings: standings}
     }
 
     getLapTime(i) {

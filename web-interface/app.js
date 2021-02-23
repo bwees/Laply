@@ -4,7 +4,7 @@ const SerialPort = require('serialport')
 const Race = require("./modules/race.js")
 const Timer = require("./modules/timer.js")
 
-var server = new Server(80)
+var server = new Server(8000)
 
 var data = {
     datatype: "settings",
@@ -25,7 +25,9 @@ var data = {
         laps: 3,
         beeps: 3,
         minTime: 10000,
-        raceObj: null
+        raceObj: null,
+        lapTable: null,
+        standings: null
     }
 }
 
@@ -149,9 +151,14 @@ server.on("RACE", (params) => {
 
             data.race.raceObj.on("lap", (lapTable) => {
                 server.broadcast(JSON.stringify(lapTable))
+                data.race.lapTable = lapTable
             })
             data.race.raceObj.on("tick", (timerData) => {
                 server.broadcast(JSON.stringify(timerData))
+            })
+            data.race.raceObj.on("standings", (standings) => {
+                server.broadcast(JSON.stringify(standings))
+                data.race.standings = standings
             })
 
             break;
@@ -162,14 +169,29 @@ server.on("RACE", (params) => {
             break;
 
         case "RESET":
-
+            data.race.lapTable = null
+            data.race.standings = null
+            
             data.race.raceObj = new Race(data.race.laps)
+            var resetStandings = data.race.raceObj.resetStandings(data.pilots)
+            server.broadcast(JSON.stringify(resetStandings))
+
             for (var i=0; i<4; i++) {
                 server.broadcast(JSON.stringify({datatype: "timerTick", pilot: i, time: 0}))
             }
             break;
     }
     updateClients()
+})
+
+server.on("DATA", () => {
+    updateClients()
+    if (data.race.standings) {
+        server.broadcast(JSON.stringify(data.race.standings))
+    }
+    if (data.race.lapTable) {
+        server.broadcast(JSON.stringify(data.race.lapTable))
+    }
 })
 
 function getPortsList() {

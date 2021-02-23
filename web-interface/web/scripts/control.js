@@ -5,6 +5,7 @@ data = {}
 
 ws.onopen = function () {
     // Web Socket is connected, send data using send()
+    ws.send("DATA")
 };
 
 startBtn = document.getElementById("startRace")
@@ -76,6 +77,10 @@ ws.onmessage = function (event) {
         }
 
         timerLabel.textContent = secsFormat(timerData.time)
+
+    } else if (JSON.parse(event.data).datatype === "standings") {
+        var standings = JSON.parse(event.data)
+        updateStandings(standings)
     }
 }
 
@@ -134,7 +139,6 @@ function disableSave() {
 }
 
 function canSave() {
-    console.log(document.getElementById("lapTable").rows.length)
     if (document.getElementById("lapTable").rows.length > 1) { // If laps are not empty
         if (!data.race.raceObj.running) { // if we are not running
             return true;
@@ -149,5 +153,47 @@ function saveRace() {
     if (raceName != null && raceName != "") {
         console.log("YAY")
     }
+}
 
+function updateStandings(standings) {
+    var rowDiv = document.getElementById("standingsDiv")
+    standings.standings.forEach((standing, position) => {
+        var pre = getBoxPrefixFromName(standing.name)
+        var toMove = document.getElementById(pre + "Card")
+
+        var refChild = document.getElementById(rowDiv.children[position].id)
+
+        if (position != 3) {
+            rowDiv.insertBefore(toMove, refChild)
+        } else {
+            insertAfter(rowDiv, toMove, refChild)
+        }
+
+        document.getElementById(pre+"Pos").textContent = position + 1
+    })
+}
+
+function getBoxPrefixFromName(name) {
+    var found = ""
+
+    for (var i=0; i <4; i++) {
+        if (data.pilots[i].name === name ) {
+            found = i
+        }
+    }
+
+    switch (found) {
+        case 0:
+            return "p1"
+        case 1:
+            return "p2"
+        case 2:
+            return "p3"
+        case 3:
+            return "p4"   
+    }
+}
+
+function insertAfter(element, newNode, existingNode) {
+    element.insertBefore(newNode, existingNode.nextSibling);
 }
