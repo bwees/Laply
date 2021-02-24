@@ -10,6 +10,8 @@ ws.onopen = function () {
 
 startBtn = document.getElementById("startRace")
 
+var firstRun = true
+
 ws.onmessage = function (event) {
     if (JSON.parse(event.data).datatype === "settings") {
         data = JSON.parse(event.data)
@@ -21,26 +23,27 @@ ws.onmessage = function (event) {
         document.getElementById("p4Name").textContent = data.pilots[3].name
 
         // Start/Stop/Save Button Styling
-        if (data.race.raceObj) {
-            if(data.race.raceObj.running) {
-                startBtn.classList.remove("btn-success");
-                startBtn.classList.add("btn-danger");
-                startBtn.innerHTML = "Stop"
-                disableSave()
-            } else {
-                startBtn.classList.remove("btn-danger");
-                startBtn.classList.add("btn-success");
-                startBtn.innerHTML = "Start"
-                if (canSave()) {
-                    enableSave()
+        if (firstRun) {
+            if (data.race.raceObj) {
+                if(data.race.raceObj.running) {
+                    startBtn.classList.remove("btn-success");
+                    startBtn.classList.add("btn-danger");
+                    startBtn.innerHTML = "Stop"
+                    disableSave()
+                } else {
+                    startBtn.classList.remove("btn-danger");
+                    startBtn.classList.add("btn-success");
+                    startBtn.innerHTML = "Start"
+                    if (canSave()) {
+                        enableSave()
+                    }
                 }
             }
         }
 
     } else if (JSON.parse(event.data).datatype === "lapTable") {
-
         lapTableData = JSON.parse(event.data)
-        console.log(lapTableData)
+
         table = document.getElementById("lapTable")
         clearLapTable(table)
 
@@ -96,6 +99,11 @@ function startRace() {
         }
 
         synth.triggerAttackRelease("600", "8n", now + data.race.beeps)
+
+        startBtn.classList.remove("btn-success");
+        startBtn.classList.add("btn-danger");
+        startBtn.innerHTML = "Stop"
+        disableSave()
 
         ws.send("RACE START")
     } else {

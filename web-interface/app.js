@@ -31,6 +31,8 @@ var data = {
     }
 }
 
+process.on('unhandledRejection', () => {}) // Supress warnings
+
 const delay = ms => new Promise(res => setTimeout(res, ms))
 
 server.on("new", (ws) => {
@@ -117,6 +119,11 @@ server.on("SERIAL", async (params) => {
                     }
                 }
             })
+
+            data.serial.connection.on('error', function(err) {
+                console.log('Error: ', err.message)
+              })
+
             break
 
         case "CLOSE":
@@ -146,32 +153,34 @@ server.on("RACE", (params) => {
             break
 
         case "START":
-            data.race.raceObj = new Race(data.race.laps)
-            data.race.raceObj.running = true
+            setTimeout(() => {
+                data.race.raceObj = new Race(data.race.laps)
+                data.race.raceObj.running = true
+                data.race.raceObj.on("lap", (lapTable) => {
+                    server.broadcast(JSON.stringify(lapTable))
+                    data.race.lapTable = lapTable
+                })
+                data.race.raceObj.on("tick", (timerData) => {
+                    server.broadcast(JSON.stringify(timerData))
+                })
+                data.race.raceObj.on("standings", (standings) => {
+                    server.broadcast(JSON.stringify(standings))
+                    data.race.standings = standings
+                })
+                updateClients()
+            }, (data.race.beeps*1000)+1000)
 
-            data.race.raceObj.on("lap", (lapTable) => {
-                server.broadcast(JSON.stringify(lapTable))
-                data.race.lapTable = lapTable
-            })
-            data.race.raceObj.on("tick", (timerData) => {
-                server.broadcast(JSON.stringify(timerData))
-            })
-            data.race.raceObj.on("standings", (standings) => {
-                server.broadcast(JSON.stringify(standings))
-                data.race.standings = standings
-            })
-
-            break;
+            break
 
         case "STOP":
             data.race.raceObj.running = false
             data.race.raceObj.stopTimers()
-            break;
+            break
 
         case "RESET":
             data.race.lapTable = null
             data.race.standings = null
-            
+
             data.race.raceObj = new Race(data.race.laps)
             var resetStandings = data.race.raceObj.resetStandings(data.pilots)
             server.broadcast(JSON.stringify(resetStandings))
@@ -179,7 +188,7 @@ server.on("RACE", (params) => {
             for (var i=0; i<4; i++) {
                 server.broadcast(JSON.stringify({datatype: "timerTick", pilot: i, time: 0}))
             }
-            break;
+            break
     }
     updateClients()
 })
