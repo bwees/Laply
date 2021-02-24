@@ -25,7 +25,7 @@ node -v
 2. Laply Install
 ```
 git clone https://github.com/bwees/Laply
-cd web-interface
+cd Laply/web-interface
 npm i
 ```
 
