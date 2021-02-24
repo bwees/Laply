@@ -1,4 +1,4 @@
-# Laply
+<img src="https://github.com/bwees/Laply/raw/master/docs/logo.png?raw=true" width="350" title="hover text">
 
 Laply is based on nodeJS and Argon Dashboard. Laply utilizes a serial connction between an Arduino Nano and RX5808. 
 
