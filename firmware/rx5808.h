@@ -2,7 +2,6 @@
 #define rx5808_h
 
 #include "Arduino.h"
-#include "settings.h"
 
 class RX5808
 {

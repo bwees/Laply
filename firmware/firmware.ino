@@ -1,29 +1,44 @@
-#include <movingAvg.h>
-
-#include "settings.h"
 #include "rx5808.h"
+#include "utils.h"
+
+// ************SETTINGS************ //
+
+// List of channels to handle for this device (array with values ranging from 0-3)
+// Change which channel set is used for each device you upload the firmware to
+// Example, upload {0,1} to your first device and {2,3} to your second
+//
+// Example Configs:
+// 1 Device = {0,1,2,3}
+// 2 Devices = {0,1} and {2,3}
+// 4 Devices = {0}, {1}, {2}, {3}
+
+int channels[] = {0,1,2,3};
+
+// Pins
+#define PIN_SPI_DATA 10
+#define PIN_SLAVE_SELECT 11
+#define PIN_SPI_CLOCK 12
+
+#define PIN_RSSI A6
+
+// ******************************** //
 
 RX5808 rx5808(PIN_RSSI, PIN_SPI_DATA, PIN_SLAVE_SELECT, PIN_SPI_CLOCK);
 
 int pilotFrequencies[4] = {5658, 5732, 5806, 5880};
-
+int numChannels = sizeof(channels)/sizeof(channels[0]);
 bool dump = false;
 
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(115200);
   Serial.println("DEBUG: SERIAL ACTIVATED");
-
   rx5808.init();
-
-  // Beeper
-  pinMode(PIN_BEEPER, OUTPUT);
 }
 
 void loop() {
-
+  // Command Handling
   if (Serial.available() > 0) {
-    // read the incoming byte:
     String command = Serial.readStringUntil('\n');
 
     if (getValue(command, ':', 0).equals("SETFREQ")) {
@@ -41,39 +56,25 @@ void loop() {
       dump = false;
       Serial.println("SUCCESS-" + command);
     }
-
   }
-  
+
+  // Output
   if (dump) {
     rssiDump();
   }
 }
 
+// Function outputs RSSI data when called to Serial
 void rssiDump(void) {
-  String msg = "RSSI-";
-  for (int i=0; i<4; i++) {
-    rx5808.setFrequency(pilotFrequencies[i]);
-    delay(35);
+  for (int i=0; i<numChannels; i++) {
+    rx5808.setFrequency(pilotFrequencies[channels[i]]);
+    delay(35); // Tuning time
 
+    String msg = "RSSI_";
+    msg += channels[i];
+    msg += "-";
     msg += rx5808.readRssi();
-    msg += ",";
+
+    Serial.println(msg);
   }
-  
-  Serial.println(msg);
-}
-
-String getValue(String data, char separator, int index)
-{
-    int found = 0;
-    int strIndex[] = { 0, -1 };
-    int maxIndex = data.length() - 1;
-
-    for (int i = 0; i <= maxIndex && found <= index; i++) {
-        if (data.charAt(i) == separator || i == maxIndex) {
-            found++;
-            strIndex[0] = strIndex[1] + 1;
-            strIndex[1] = (i == maxIndex) ? i+1 : i;
-        }
-    }
-    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
