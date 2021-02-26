@@ -14,6 +14,8 @@ try {
     ws.send("SERIAL AVAILABLE")
 } catch {}
 
+rssiValInterval = 0
+
 ws.onmessage = function (event) {
 
     if (JSON.parse(event.data).datatype === "settings") {
@@ -95,12 +97,23 @@ ws.onmessage = function (event) {
         document.getElementById("pilot4Thresh").value = data.pilots[3].rssi
 
     } else if (JSON.parse(event.data).datatype === "rssi") {
-        rssiData = JSON.parse(event.data)
-
-        var prefix = "p" + (rssiData.index+1)
         
-        document.getElementById(prefix+"RssiLabel").textContent = "RSSI: " + rssiData.rssi
-        document.getElementById(prefix+"RssiBar").style.width = ((rssiData.rssi / 250) * 100) + "%"
+        rssiData = JSON.parse(event.data)
+        rssiData.data.forEach((element, i) => {
+
+            var prefix = "p" + (i+1)
+            document.getElementById(prefix+"RssiLabel").textContent = "RSSI: " + element
+            if (rssiValInterval == 8) {
+                document.getElementById(prefix+"RssiBar").style.width = ((element / 250) * 100) + "%"
+            }
+        })
+
+        if (rssiValInterval == 8) {
+            rssiValInterval = 0
+        } else {
+            rssiValInterval += 1
+        }
+
     }
 
 }

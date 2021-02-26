@@ -28,12 +28,17 @@ var data = {
         raceObj: null,
         lapTable: null,
         standings: null
-    }
+    }, 
+    rssi: [0,0,0,0]
 }
 
 process.on('unhandledRejection', () => {}) // Supress warnings
 
 const delay = ms => new Promise(res => setTimeout(res, ms))
+
+setInterval(() => {
+    server.broadcast(JSON.stringify({datatype: "rssi", data: data.rssi}))
+}, 250)
 
 server.on("new", (ws) => {
     updateClients()
@@ -47,6 +52,7 @@ server.on("PILOTSET", (params) => {
         p.frequency = parseInt(params[2], 10)
         if (data.serial.connection) {
             data.serial.connection.write('SETFREQ:' + parseInt(params[0], 10) + ":" + p.frequency + '\n')
+            console.log('SETFREQ:' + parseInt(params[0], 10) + ":" + p.frequency)
         }
     }
 
@@ -80,7 +86,7 @@ server.on("SERIAL", async (params) => {
                 }
             ).setEncoding("utf-8")
 
-            await delay(2000)
+            //await delay(2000)
 
             for (i = 0; i < 4; i++) {
                 data.serial.connection.write('SETFREQ:' + i + ":" + data.pilots[i].frequency + '\n')
@@ -90,18 +96,12 @@ server.on("SERIAL", async (params) => {
             data.serial.connection.on('data', function (message) {
                 message = message.toString()
                 if (message.includes("RSSI")) {
-                    frame = {
-                        datatype: "rssi",
-                    }
 
                     var header = message.split("-")[0]
                     var index = parseInt(header.split("_")[1], 10)
                     var rssi = parseInt(message.split("-")[1], 10)
 
-                    frame.rssi = rssi
-                    frame.index = index
-
-                    server.broadcast(JSON.stringify(frame))
+                    data.rssi[index] = rssi
 
                     if (data.race.raceObj != null) {
                         if (data.race.raceObj.running) {
