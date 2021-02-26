@@ -13,7 +13,7 @@ Laply is based on nodeJS and Argon Dashboard. Laply utilizes a serial connction 
 6. Open the serial monitor and you should see repeating output similar to ```RSSI_0-120```
 
 ### NodeJS Server
-These instructions have to a Raspberry Pi 3B, 3B+, 4B. Step 1 will be specific to your device and its nodeJS install steps.
+These instructions have been tested on a Raspberry Pi 3B+. Step 1 will be specific to your device and its nodeJS install steps.
 
 1. Install NodeJS on Raspberry Pi ([Reference](https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp))
 ```
