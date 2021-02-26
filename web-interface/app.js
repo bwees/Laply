@@ -92,29 +92,20 @@ server.on("SERIAL", async (params) => {
                 if (message.includes("RSSI")) {
                     frame = {
                         datatype: "rssi",
-                        1: null,
-                        2: null,
-                        3: null,
-                        4: null,
                     }
 
-                    i = 1
-                    message = message.split("-")[1]
-                    message = message.split(",")
-                    message.pop()
+                    var header = message.split("-")[0]
+                    var index = parseInt(header.split("_")[1], 10)
+                    var rssi = parseInt(message.split("-")[1], 10)
 
-                    message.forEach(element => {
-                        var rssi = parseInt(element)
-                        frame[i] = rssi
-                        i++
-                    })
+                    frame.rssi = rssi
+                    frame.index = index
 
                     server.broadcast(JSON.stringify(frame))
 
                     if (data.race.raceObj != null) {
-
                         if (data.race.raceObj.running) {
-                            data.race.raceObj.handleRssi(frame, data.pilots, data.race.minTime)
+                            data.race.raceObj.handleRssi(index, rssi, data.pilots, data.race.minTime)
                         }
                     }
                 }

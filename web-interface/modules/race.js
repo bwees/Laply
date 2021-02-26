@@ -16,19 +16,16 @@ class Race extends EventEmitter {
         this.lapTimers = [new Timer(), new Timer(), new Timer(), new Timer()]
     }
 
-    handleRssi(rssiData, pilots, minTime) {
+    handleRssi(index, rssi, pilots, minTime) {
         this.pilots = pilots
         if (this.running) {
-            delete rssiData.datatype
-            Object.values(rssiData).forEach((element, index) => {
-                if (element > this.pilots[index].rssi) { // If peak detected
-                    if (this.laps[index].length < this.numLaps) { // If pilot has not finished the max laps
-                        this.recordLap(index, minTime);
-                    } else {
-                        this.lapTimers[index].stop()
-                    }
+            if (rssi > this.pilots[index].rssi) { // If peak detected
+                if (this.laps[index].length < this.numLaps) { // If pilot has not finished the max laps
+                    this.recordLap(index, minTime);
+                } else {
+                    this.lapTimers[index].stop()
                 }
-            });
+            }
         }
     }
 

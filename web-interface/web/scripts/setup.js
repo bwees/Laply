@@ -96,17 +96,11 @@ ws.onmessage = function (event) {
 
     } else if (JSON.parse(event.data).datatype === "rssi") {
         rssiData = JSON.parse(event.data)
-        document.getElementById("p1RssiLabel").textContent = "RSSI: " + rssiData["1"]
-        document.getElementById("p1RssiBar").style.width = ((rssiData["1"] / 250) * 100) + "%"
 
-        document.getElementById("p2RssiLabel").textContent = "RSSI: " + rssiData["2"]
-        document.getElementById("p2RssiBar").style.width = ((rssiData["2"] / 250) * 100) + "%"
-
-        document.getElementById("p3RssiLabel").textContent = "RSSI: " + rssiData["3"]
-        document.getElementById("p3RssiBar").style.width = ((rssiData["3"] / 250) * 100) + "%"
-
-        document.getElementById("p4RssiLabel").textContent = "RSSI: " + rssiData["4"]
-        document.getElementById("p4RssiBar").style.width = ((rssiData["4"] / 250) * 100) + "%"
+        var prefix = "p" + (rssiData.index+1)
+        
+        document.getElementById(prefix+"RssiLabel").textContent = "RSSI: " + rssiData.rssi
+        document.getElementById(prefix+"RssiBar").style.width = ((rssiData.rssi / 250) * 100) + "%"
     }
 
 }
