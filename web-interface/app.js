@@ -2,7 +2,7 @@ const Server = require("./modules/server.js")
 const Pilot = require("./modules/pilot.js")
 const SerialPort = require('serialport')
 const Race = require("./modules/race.js")
-const Timer = require("./modules/timer.js")
+const MovingAverage = require("./modules/movingaverage.js")
 
 var server = new Server(8000)
 
@@ -29,7 +29,13 @@ var data = {
         lapTable: null,
         standings: null
     }, 
-    rssi: [0,0,0,0]
+    rssi: [0,0,0,0],
+    rssiMovingAvgs: [
+        new MovingAverage(15),
+        new MovingAverage(15),
+        new MovingAverage(15),
+        new MovingAverage(15)
+    ]
 }
 
 process.on('unhandledRejection', () => {}) // Supress warnings
@@ -101,7 +107,7 @@ server.on("SERIAL", async (params) => {
                     var index = parseInt(header.split("_")[1], 10)
                     var rssi = parseInt(message.split("-")[1], 10)
 
-                    data.rssi[index] = rssi
+                    data.rssi[index] = data.rssiMovingAvgs[index].dataPoint(rssi)
 
                     if (data.race.raceObj != null) {
                         if (data.race.raceObj.running) {

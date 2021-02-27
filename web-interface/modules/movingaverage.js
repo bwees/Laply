@@ -16,8 +16,12 @@ class MovingAverage {
     }
 
     getAvg() {
-        var sum = this.dataPoints.reduce()
-        return sum / this.dataPoints.length
+        var sum = 0
+        this.dataPoints.forEach((element, i) => {
+            sum += element
+        })
+
+        return Math.round(sum / this.dataPoints.length)
     }
 
     clearData() {
