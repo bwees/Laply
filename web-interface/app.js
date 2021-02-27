@@ -173,6 +173,7 @@ server.on("RACE", (params) => {
             data.race.standings = null
 
             data.race.raceObj = new Race(data.race.laps)
+            
             var resetStandings = data.race.raceObj.resetStandings(data.pilots)
             server.broadcast(JSON.stringify(resetStandings))
 
