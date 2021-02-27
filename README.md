@@ -18,8 +18,8 @@ These instructions have been tested on a Raspberry Pi 3B+. Step 1 will be specif
 1. Install NodeJS on Raspberry Pi ([Reference](https://www.w3schools.com/nodejs/nodejs_raspberrypi.asp))
 ```
 sudo apt-get update
-curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
-sudo apt-get install -y nodejs
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+sudo apt-get install -y nodejs git
 node -v
 ```
 
