@@ -34,83 +34,84 @@
 </head>
 
 <body>
-  
-    <div class="col-xl-3 col-md-6">
+  <div id="standingsDiv">
+    <div class="col-xl-3 col-md-6" id="p1Card">
       <div class="card card-stats">
         <!-- Card body -->
         <div class="card-body">
           <div class="row">
             <div class="col">
-              <h5 class="card-title text-uppercase text-muted mb-0">Pilot 1</h5>
-              <p class="h1 font-weight-bold mb-0">+00:48.3s</p>
-              <span class="text-sm">BEST: 00:59.6s</span>
+              <h2 class="card-title text-uppercase  mb-0" id="p1Name">Pilot 1</h2>
+              <p class="h1 mb-0 " id="timer1">+00:00.0</p>
+              <span class="text-sm">BEST: 00:00.0s</span>
             </div>
             <div class="col-auto">
               <div class="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
-                <h6 class="h1 text-white d-inline-block mb-0">1</h6>
+                <h6 class="h1 text-white d-inline-block mb-0" id="p1Pos">1</h6>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-3 col-md-6" id="p2Card">
       <div class="card card-stats">
         <!-- Card body -->
         <div class="card-body">
           <div class="row">
             <div class="col">
-              <h5 class="card-title text-uppercase text-muted mb-0">Pilot 2</h5>
-              <p class="h1 font-weight-bold mb-0">+00:48.3s</p>
-              <span class="text-sm">BEST: 00:59.6s</span>
+              <h2 class="card-title text-uppercase mb-0" id="p2Name">Pilot 2</h2>
+              <p class="h1  mb-0 " id="timer2">+00:00.0</p>
+              <span class="text-sm">BEST: 00:00.0s</span>
             </div>
             <div class="col-auto">
               <div class="icon icon-shape bg-gradient-yellow text-white rounded-circle shadow">
-                <h6 class="h1 text-white d-inline-block mb-0">2</h6>
+                <h6 class="h1 text-white d-inline-block mb-0" id="p2Pos">2</h6>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-3 col-md-6" id="p3Card">
       <div class="card card-stats">
         <!-- Card body -->
-        <div class="card-body">
+        <div class="card-body" >
           <div class="row">
             <div class="col">
-              <h5 class="card-title text-uppercase text-muted mb-0">Pilot 3</h5>
-              <p class="h1 font-weight-bold mb-0">+00:48.3s</p>
-              <span class="text-sm">BEST: 00:59.6s</span>
+              <h2 class="card-title text-uppercase  mb-0" id="p3Name">Pilot 3</h2>
+              <p class="h1 mb-0 " id="timer3">+00:00.0</p>
+              <span class="text-sm">BEST: 00:00.0s</span>
             </div>
             <div class="col-auto">
               <div class="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
-                <h6 class="h1 text-white d-inline-block mb-0">3</h6>
+                <h6 class="h1 text-white d-inline-block mb-0" id="p3Pos">3</h6>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-3 col-md-6" id="p4Card">
       <div class="card card-stats">
         <!-- Card body -->
-        <div class="card-body">
+        <div class="card-body" id="p4Card">
           <div class="row">
             <div class="col">
-              <h5 class="card-title text-uppercase text-muted mb-0">Pilot 4</h5>
-              <p class="h1 font-weight-bold mb-0">+00:48.3s</p>
-              <span class="text-sm">BEST: 00:59.6s</span>
+              <h2 class="card-title text-uppercase mb-0" id="p4Name">Pilot 4</h2>
+              <p class="h1 mb-0 " id="timer4">+00:00.0</p>
+              <span class="text-sm">BEST: 00:00.0s</span>
             </div>
             <div class="col-auto">
               <div class="icon icon-shape bg-gradient-teal text-white rounded-circle shadow">
-                <h6 class="h1 text-white d-inline-block mb-0">4</h6>
+                <h6 class="h1 text-white d-inline-block mb-0" id="p4Pos">4</h6>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
   
   <!-- Argon Scripts -->
@@ -125,6 +126,8 @@
   <script src="assets/vendor/chart.js/dist/Chart.extension.js"></script>
   <!-- Argon JS -->
   <script src="assets/js/argon.js?v=1.2.0"></script>
+
+  <script src="scripts/overlay.js"></script>
 </body>
 
 </html>
