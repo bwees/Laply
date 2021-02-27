@@ -74,7 +74,7 @@ class Race extends EventEmitter {
         }
 
         standings.sort(function (a, b) {
-            return b.num - a.num || b.time - a.time;
+            return b.num - a.num || a.time - b.time;
         });
 
         this.emit("standings", {datatype: "standings", standings: standings})
