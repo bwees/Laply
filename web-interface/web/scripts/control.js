@@ -1,7 +1,9 @@
 
 var ws = new WebSocket("ws://" + window.location.host + "/ws");
 
-data = {}
+var data = {}
+var tableData = []
+var timers = [0,0,0,0]
 
 ws.onopen = function () {
     // Web Socket is connected, send data using send()
@@ -15,6 +17,7 @@ var firstRun = true
 ws.onmessage = function (event) {
     if (JSON.parse(event.data).datatype === "settings") {
         data = JSON.parse(event.data)
+        
 
         // Pilot Names
         document.getElementById("p1Name").textContent = data.pilots[0].name
@@ -24,7 +27,9 @@ ws.onmessage = function (event) {
 
         // Start/Stop/Save Button Styling
         if (firstRun) {
+            firstRun = false
             if (data.race.raceObj) {
+                console.log(data.race.raceObj.running)
                 if(data.race.raceObj.running) {
                     startBtn.classList.remove("btn-success");
                     startBtn.classList.add("btn-danger");
@@ -34,6 +39,7 @@ ws.onmessage = function (event) {
                     startBtn.classList.remove("btn-danger");
                     startBtn.classList.add("btn-success");
                     startBtn.innerHTML = "Start"
+
                     if (canSave()) {
                         enableSave()
                     }
@@ -43,6 +49,7 @@ ws.onmessage = function (event) {
 
     } else if (JSON.parse(event.data).datatype === "lapTable") {
         lapTableData = JSON.parse(event.data)
+        tableData = JSON.parse(event.data)
 
         table = document.getElementById("lapTable")
         clearLapTable(table)
@@ -53,15 +60,18 @@ ws.onmessage = function (event) {
             pilotName = row.insertCell(0);
             lapNum = row.insertCell(1);
             lapTime = row.insertCell(2);
-            pace = row.insertCell(3);
     
             pilotName.innerHTML = lapData.name
             lapNum.innerHTML = lapData.lapNum + "/" + data.race.laps
             lapTime.innerHTML = lapData.lapTime/1000
-            pace.innerHTML = "+0:00"
         });
+
+        if (canSave())
+            enableSave()
     } else if (JSON.parse(event.data).datatype === "timerTick") {
         var timerData = JSON.parse(event.data)
+        
+
         timerData.time = Math.round(timerData.time * 10) / 10;
 
         switch (timerData.pilot) {
@@ -79,18 +89,24 @@ ws.onmessage = function (event) {
                 break;
         }
 
-        timerLabel.textContent = secsFormat(timerData.time)
+        timerLabel.textContent = "+" + secsFormat(timerData.time)
+        timers[timerData.pilot] = timerData.time
 
     } else if (JSON.parse(event.data).datatype === "standings") {
         var standings = JSON.parse(event.data)
+        data.race.standings = standings.standings
         updateStandings(standings)
+    } else if (JSON.parse(event.data).datatype === "newBest") {
+        var bestData = JSON.parse(event.data)
+
+        var pre = getBoxPrefixFromName(bestData.pilot)
+        document.getElementById(pre + "Best").textContent = (bestData.time == -1 ? "BEST: --:--.-" : "BEST: " + secsFormat(bestData.time/1000))
     }
 }
 
 function startRace() {
 
     if (startBtn.innerHTML === "Start") {
-        
         let synth = new Tone.Synth().toMaster();
 
         const now = Tone.now()
@@ -99,14 +115,23 @@ function startRace() {
         }
 
         synth.triggerAttackRelease("600", "8n", now + data.race.beeps)
-
+        
         startBtn.classList.remove("btn-success");
         startBtn.classList.add("btn-danger");
         startBtn.innerHTML = "Stop"
         disableSave()
 
         ws.send("RACE START")
-    } else {
+    } else if (startBtn.innerHTML = "Stop") {
+        startBtn.classList.remove("btn-danger");
+        startBtn.classList.add("btn-success");
+        startBtn.innerHTML = "Start"
+
+        data.race.raceObj.running = false
+        if (canSave()) {
+            enableSave()
+        }
+
         ws.send("RACE STOP")
     }
 }
@@ -116,7 +141,6 @@ function clearLapTable(table) {
     for (var x=rowCount-1; x>0; x--) {
         table.deleteRow(x);
     }
-    disableSave()
 }
 
 function secsFormat(secs) {
@@ -129,7 +153,7 @@ function secsFormat(secs) {
     if (minutes < 10) {minutes = "0"+minutes;}
     if (seconds < 10) {seconds = "0"+seconds;}
     if (seconds % 1 == 0) {seconds = seconds+".0"}
-    return "+"+minutes+':'+seconds;
+    return minutes+':'+seconds;
 }
 
 function resetRace() {
@@ -159,12 +183,25 @@ function canSave() {
 function saveRace() {
     var raceName = window.prompt("Please enter a name for the race", "Race Name")
     if (raceName != null && raceName != "") {
-        console.log("YAY")
+
+        var saveData = []
+        tableData.table.forEach((lapData) => {
+            saveData.unshift([
+                lapData.name,
+                lapData.lapNum,
+                lapData.lapTime/1000
+            ])
+        });
+
+        saveData.unshift(["PILOT NAME", "LAP NUM", "LAP TIME"])
+
+        exportToCsv(raceName + ".csv", saveData);
     }
 }
 
 function updateStandings(standings) {
     var rowDiv = document.getElementById("standingsDiv")
+    
     standings.standings.forEach((standing, position) => {
         var pre = getBoxPrefixFromName(standing.name)
         var toMove = document.getElementById(pre + "Card")
@@ -204,4 +241,46 @@ function getBoxPrefixFromName(name) {
 
 function insertAfter(element, newNode, existingNode) {
     element.insertBefore(newNode, existingNode.nextSibling);
+}
+
+
+// CSV EXPORT 
+
+function exportToCsv(filename, rows) {
+    var processRow = function (row) {
+        var finalVal = '';
+        for (var j = 0; j < row.length; j++) {
+            var innerValue = row[j] === null ? '' : row[j].toString();
+            if (row[j] instanceof Date) {
+                innerValue = row[j].toLocaleString();
+            };
+            var result = innerValue.replace(/"/g, '""');
+            if (result.search(/("|,|\n)/g) >= 0)
+                result = '"' + result + '"';
+            if (j > 0)
+                finalVal += ',';
+            finalVal += result;
+        }
+        return finalVal + '\n';
+    };
+    var csvFile = '';
+    for (var i = 0; i < rows.length; i++) {
+        csvFile += processRow(rows[i]);
+    }
+    var blob = new Blob([csvFile], { type: 'text/csv;charset=utf-8;' });
+    if (navigator.msSaveBlob) { // IE 10+
+        navigator.msSaveBlob(blob, filename);
+    } else {
+        var link = document.createElement("a");
+        if (link.download !== undefined) { // feature detection
+            // Browsers that support HTML5 download attribute
+            var url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style = "visibility:hidden";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
 }

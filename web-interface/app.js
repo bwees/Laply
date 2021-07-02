@@ -28,16 +28,16 @@ var data = {
         raceObj: null,
         lapTable: null,
         standings: null
-    }, 
-    rssi: [0,0,0,0]
+    },
+    rssi: [0, 0, 0, 0]
 }
 
-process.on('unhandledRejection', () => {}) // Supress warnings
+process.on('unhandledRejection', () => { }) // Supress warnings
 
 const delay = ms => new Promise(res => setTimeout(res, ms))
 
 setInterval(() => {
-    server.broadcast(JSON.stringify({datatype: "rssi", data: data.rssi}))
+    server.broadcast(JSON.stringify({ datatype: "rssi", data: data.rssi }))
 }, 250)
 
 server.on("new", (ws) => {
@@ -111,9 +111,9 @@ server.on("SERIAL", async (params) => {
                 }
             })
 
-            data.serial.connection.on('error', function(err) {
+            data.serial.connection.on('error', function (err) {
                 console.log('Error: ', err.message)
-              })
+            })
 
             break
 
@@ -140,7 +140,7 @@ server.on("RACE", (params) => {
             break
 
         case "MIN":
-            data.race.minTime = parseInt(params[1], 10)*1000 // convert to ms
+            data.race.minTime = parseInt(params[1], 10) * 1000 // convert to ms
             break
 
         case "START":
@@ -158,14 +158,19 @@ server.on("RACE", (params) => {
                     server.broadcast(JSON.stringify(standings))
                     data.race.standings = standings
                 })
+                data.race.raceObj.on("newBest", (newBest) => {
+                    server.broadcast(JSON.stringify(newBest))
+                })
                 updateClients()
-            }, (data.race.beeps*1000)+1000)
+            }, (data.race.beeps * 1000) + 1000)
 
             break
 
         case "STOP":
-            data.race.raceObj.running = false
-            data.race.raceObj.stopTimers()
+            if (data.race) {
+                data.race.raceObj.running = false
+                data.race.raceObj.stopTimers()
+            }
             break
 
         case "RESET":
@@ -176,8 +181,8 @@ server.on("RACE", (params) => {
             var resetStandings = data.race.raceObj.resetStandings(data.pilots)
             server.broadcast(JSON.stringify(resetStandings))
 
-            for (var i=0; i<4; i++) {
-                server.broadcast(JSON.stringify({datatype: "timerTick", pilot: i, time: 0}))
+            for (var i = 0; i < 4; i++) {
+                server.broadcast(JSON.stringify({ datatype: "timerTick", pilot: i, time: 0 }))
             }
             break
     }
@@ -216,12 +221,12 @@ function updateClients() {
 const getCircularReplacer = () => {
     const seen = new WeakSet();
     return (key, value) => {
-      if (typeof value === "object" && value !== null) {
-        if (seen.has(value)) {
-          return;
+        if (typeof value === "object" && value !== null) {
+            if (seen.has(value)) {
+                return;
+            }
+            seen.add(value);
         }
-        seen.add(value);
-      }
-      return value;
+        return value;
     };
-  };
+};

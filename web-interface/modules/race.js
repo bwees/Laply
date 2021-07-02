@@ -13,6 +13,7 @@ class Race extends EventEmitter {
             datatype: "lapTable",
             table: []
         }
+        this.bestTimes = [-1,-1,-1,-1]
         this.lapTimers = [new Timer(), new Timer(), new Timer(), new Timer()]
     }
 
@@ -44,22 +45,27 @@ class Race extends EventEmitter {
 
             if (lapTime >= min) {
                 if (pLaps.length < this.numLaps) {
-                    this.lapTimers[index].reset()
+                    this.lapTimers[index].resetLap()
+                }
+
+                if (lapTime < this.bestTimes[index] || this.bestTimes[index] == -1) {
+                    this.bestTimes[index] = lapTime
+                    this.emit("newBest", {datatype: "newBest", pilot: this.pilots[index].name, time: lapTime})
                 }
         
                 this.lapTable.table.unshift({ 
                     name: this.pilots[index].name, 
                     lapTime: lapTime, 
                     lapNum: this.laps[index].length, 
+                    best: this.bestTimes[index],
                     datatype: "lap" 
                 })
                 this.emit("lap", this.lapTable)
+                this.updateStandings()
             } else {
                 pLaps.pop()
             }
-
         }
-        this.updateStandings()
     }
 
     async updateStandings() {

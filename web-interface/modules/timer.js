@@ -6,6 +6,7 @@ class Timer extends EventEmitter {
         this.time = 0
         this.running = false
         this.nextTimeout = null
+        this.total = 0
     }
 
     start() {
@@ -16,8 +17,9 @@ class Timer extends EventEmitter {
     timerTick() {
         if (this.running) {
             this.time += 0.1
+            this.total += 0.1
 
-            this.emit('tick', this.time)
+            this.emit('tick', this.total)
 
             this.nextTimeout = setTimeout(() => this.timerTick(), 100)
         }
@@ -30,6 +32,11 @@ class Timer extends EventEmitter {
     }
 
     reset() {
+        this.time = 0
+        this.total = 0
+    }
+
+    resetLap() {
         this.time = 0
     }
 }

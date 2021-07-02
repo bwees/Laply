@@ -39,11 +39,17 @@ ws.onmessage = function (event) {
                 break;
         }
 
-        timerLabel.textContent = secsFormat(timerData.time)
+        timerLabel.textContent = "+" + secsFormat(timerData.time)
 
     } else if (JSON.parse(event.data).datatype === "standings") {
         var standings = JSON.parse(event.data)
+        data.race.standings = standings.standings
         updateStandings(standings)
+    } else if (JSON.parse(event.data).datatype === "newBest") {
+        var bestData = JSON.parse(event.data)
+
+        var pre = getBoxPrefixFromName(bestData.pilot)
+        document.getElementById(pre + "Best").textContent = (bestData.time == -1 ? "BEST: --:--.-" : "BEST: " + secsFormat(bestData.time/1000))
     }
 }
 
@@ -91,6 +97,17 @@ function insertAfter(element, newNode, existingNode) {
     element.insertBefore(newNode, existingNode.nextSibling);
 }
 
+function getPaceText(pilotName) {
+    // Get Race Standing
+    if (!data.race.standings) return ""
+    var standing = data.race.standings.filter(record => record.name == pilotName)[0]
+    var position = data.race.standings.indexOf(standing)
+    
+    var leaderPace = data.race.standings[0].time
+    if (position==0 || (standing.time - leaderPace) <= 0) return ""
+    return "PACE: +" + Math.round(((standing.time - leaderPace) / 1000) * 10) / 10 + "s"
+}
+
 function secsFormat(secs) {
     var hours   = Math.floor(secs / 3600);
     var minutes = Math.floor((secs - (hours * 3600)) / 60);
@@ -101,5 +118,5 @@ function secsFormat(secs) {
     if (minutes < 10) {minutes = "0"+minutes;}
     if (seconds < 10) {seconds = "0"+seconds;}
     if (seconds % 1 == 0) {seconds = seconds+".0"}
-    return "+"+minutes+':'+seconds;
+    return minutes+':'+seconds;
 }
