@@ -82,8 +82,6 @@ server.on("SERIAL", async (params) => {
                 }
             ).setEncoding("utf-8")
 
-            //await delay(2000)
-
             for (i = 0; i < 4; i++) {
                 data.serial.connection.write('SETFREQ:' + i + ":" + data.pilots[i].frequency + '\n')
             }
@@ -92,7 +90,7 @@ server.on("SERIAL", async (params) => {
             data.serial.connection.on('data', function (message) {
                 data.serial.status = true
                 updateClients()
-                
+
                 message = message.toString()
                 if (message.includes("RSSI")) {
 
@@ -206,7 +204,9 @@ function getPortsList() {
 
     SerialPort.list().then(ports => {
         ports.forEach((port) => {
-            portsList.push(port.path)
+            if (port.path != "/dev/ttyAMA0") { // ignore ras pi BT serial port
+                portsList.push(port.path)
+            }
         })
 
         portsList.reverse()
