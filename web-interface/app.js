@@ -77,8 +77,6 @@ server.on("SERIAL", async (params) => {
                         console.log(err)
                         data.serial.connection = null
                         data.serial.status = false
-                    } else {
-                        data.serial.status = true
                     }
                     updateClients()
                 }
@@ -92,6 +90,9 @@ server.on("SERIAL", async (params) => {
             data.serial.connection.write('ENABLEDUMP\n')
 
             data.serial.connection.on('data', function (message) {
+                data.serial.status = true
+                updateClients()
+                
                 message = message.toString()
                 if (message.includes("RSSI")) {
 
