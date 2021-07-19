@@ -11,8 +11,8 @@ var data = {
     pilots: [
         new Pilot("Pilot1", 5658, 240),
         new Pilot("Pilot2", 5732, 240),
-        new Pilot("Pilot3", 5806, 240),
-        new Pilot("Pilot4", 5880, 240),
+        new Pilot("Pilot3", 5843, 240),
+        new Pilot("Pilot4", 5917, 240),
     ],
     serial: {
         ports: [],
@@ -33,8 +33,6 @@ var data = {
 }
 
 process.on('unhandledRejection', () => { }) // Supress warnings
-
-const delay = ms => new Promise(res => setTimeout(res, ms))
 
 setInterval(() => {
     server.broadcast(JSON.stringify({ datatype: "rssi", data: data.rssi }))
@@ -112,7 +110,10 @@ server.on("SERIAL", async (params) => {
             })
 
             data.serial.connection.on('error', function (err) {
-                console.log('Error: ', err.message)
+                console.log(err.message)
+                data.serial.connection = null
+                data.serial.status = false
+                updateClients()
             })
 
             break
