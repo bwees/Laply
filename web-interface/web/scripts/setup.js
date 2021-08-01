@@ -80,19 +80,19 @@ ws.onmessage = function (event) {
         raceMinTime.value = data.race.minTime/1000
 
         // Pilot Info
-        document.getElementById("pilot1Name").value = data.pilots[0].name
+        //document.getElementById("pilot1Name").value = data.pilots[0].name
         document.getElementById("pilot1Freq").value = data.pilots[0].frequency
         document.getElementById("pilot1Thresh").value = data.pilots[0].rssi
 
-        document.getElementById("pilot2Name").value = data.pilots[1].name
+        //document.getElementById("pilot2Name").value = data.pilots[1].name
         document.getElementById("pilot2Freq").value = data.pilots[1].frequency
         document.getElementById("pilot2Thresh").value = data.pilots[1].rssi
 
-        document.getElementById("pilot3Name").value = data.pilots[2].name
+        //document.getElementById("pilot3Name").value = data.pilots[2].name
         document.getElementById("pilot3Freq").value = data.pilots[2].frequency
         document.getElementById("pilot3Thresh").value = data.pilots[2].rssi
 
-        document.getElementById("pilot4Name").value = data.pilots[3].name
+        //document.getElementById("pilot4Name").value = data.pilots[3].name
         document.getElementById("pilot4Freq").value = data.pilots[3].frequency
         document.getElementById("pilot4Thresh").value = data.pilots[3].rssi
 
@@ -170,3 +170,21 @@ function setPilot4Info() {
     var pilot4Thresh = document.getElementById("pilot4Thresh").value
     ws.send("PILOTSET 3 " + pilot4Name + " " + pilot4Freq + " " + pilot4Thresh)
 }
+
+document.addEventListener('paste', (event) => {
+    let paste = (event.clipboardData || window.clipboardData).getData('text');
+    
+    if (paste.split("\n").length == 4) {
+        event.preventDefault();
+
+        var p = 1
+        paste.split("\n").forEach(line => {
+            if (p <= 4) {
+                try {
+                    document.getElementById("pilot"+p+"Name").value = line.split("	")[0]
+                } catch {}
+            }
+            p++;
+        })
+    } 
+});
