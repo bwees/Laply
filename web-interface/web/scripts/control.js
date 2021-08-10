@@ -3,7 +3,7 @@ var ws = new WebSocket("ws://" + window.location.host + "/ws");
 
 var data = {}
 var tableData = []
-var timers = [0,0,0,0]
+var timers = [0, 0, 0, 0]
 
 ws.onopen = function () {
     // Web Socket is connected, send data using send()
@@ -17,7 +17,7 @@ var firstRun = true
 ws.onmessage = function (event) {
     if (JSON.parse(event.data).datatype === "settings") {
         data = JSON.parse(event.data)
-        
+
 
         // Pilot Names
         document.getElementById("p1Name").textContent = data.pilots[0].name
@@ -30,7 +30,7 @@ ws.onmessage = function (event) {
             firstRun = false
             if (data.race.raceObj) {
                 console.log(data.race.raceObj.running)
-                if(data.race.raceObj.running) {
+                if (data.race.raceObj.running) {
                     startBtn.classList.remove("btn-success");
                     startBtn.classList.add("btn-danger");
                     startBtn.innerHTML = "Stop"
@@ -56,21 +56,21 @@ ws.onmessage = function (event) {
 
         lapTableData.table.forEach((lapData) => {
             row = table.insertRow(1);
-    
+
             pilotName = row.insertCell(0);
             lapNum = row.insertCell(1);
             lapTime = row.insertCell(2);
-    
+
             pilotName.innerHTML = lapData.name
             lapNum.innerHTML = lapData.lapNum + "/" + data.race.laps
-            lapTime.innerHTML = lapData.lapTime/1000
+            lapTime.innerHTML = lapData.lapTime / 1000
         });
 
         if (canSave())
             enableSave()
     } else if (JSON.parse(event.data).datatype === "timerTick") {
         var timerData = JSON.parse(event.data)
-        
+
 
         timerData.time = Math.round(timerData.time * 10) / 10;
 
@@ -100,66 +100,92 @@ ws.onmessage = function (event) {
         var bestData = JSON.parse(event.data)
 
         var pre = getBoxPrefixFromName(bestData.pilot)
-        document.getElementById(pre + "Best").textContent = (bestData.time == -1 ? "BEST: --:--.-" : "BEST: " + secsFormat(bestData.time/1000))
+        document.getElementById(pre + "Best").textContent = (bestData.time == -1 ? "BEST: --:--.-" : "BEST: " + secsFormat(bestData.time / 1000))
+
+    } else if (JSON.parse(event.data).datatype === "raceOperation") {
+        switch (JSON.parse(event.data).operation) {
+            case "start":
+                startProcess()
+                break
+            case "stop":
+                stopProcess()
+                break
+            case "reset":
+                resetRace(false)
+                break
+        }
     }
 }
 
 function startRace() {
 
     if (startBtn.innerHTML === "Start") {
-        let synth = new Tone.Synth().toMaster();
-
-        const now = Tone.now()
-        for (i = 0; i < data.race.beeps; i++) {
-            synth.triggerAttackRelease("440", "8n", now + i)
-        }
-
-        synth.triggerAttackRelease("600", "8n", now + data.race.beeps)
-        
-        startBtn.classList.remove("btn-success");
-        startBtn.classList.add("btn-danger");
-        startBtn.innerHTML = "Stop"
-        disableSave()
+        startProcess()
 
         ws.send("RACE START")
     } else if (startBtn.innerHTML = "Stop") {
-        startBtn.classList.remove("btn-danger");
-        startBtn.classList.add("btn-success");
-        startBtn.innerHTML = "Start"
-
-        data.race.raceObj.running = false
-        if (canSave()) {
-            enableSave()
-        }
+        stopProcess()
 
         ws.send("RACE STOP")
     }
 }
 
+function stopProcess() {
+    startBtn.classList.remove("btn-danger");
+    startBtn.classList.add("btn-success");
+    startBtn.innerHTML = "Start";
+
+    data.race.raceObj.running = false;
+    if (canSave()) {
+        enableSave();
+    }
+}
+
+function startProcess() {
+    let synth = new Tone.Synth().toMaster();
+
+    const now = Tone.now();
+    for (i = 0; i < data.race.beeps; i++) {
+        synth.triggerAttackRelease("440", "8n", now + i);
+    }
+
+    synth.triggerAttackRelease("600", "8n", now + data.race.beeps);
+
+    startBtn.classList.remove("btn-success");
+    startBtn.classList.add("btn-danger");
+    startBtn.innerHTML = "Stop";
+    disableSave();
+}
+
 function clearLapTable(table) {
     var rowCount = table.rows.length;
-    for (var x=rowCount-1; x>0; x--) {
+    for (var x = rowCount - 1; x > 0; x--) {
         table.deleteRow(x);
     }
 }
 
 function secsFormat(secs) {
-    var hours   = Math.floor(secs / 3600);
+    var hours = Math.floor(secs / 3600);
     var minutes = Math.floor((secs - (hours * 3600)) / 60);
     var seconds = secs - (hours * 3600) - (minutes * 60);
 
     seconds = Math.round(seconds * 10) / 10
 
-    if (minutes < 10) {minutes = "0"+minutes;}
-    if (seconds < 10) {seconds = "0"+seconds;}
-    if (seconds % 1 == 0) {seconds = seconds+".0"}
-    return minutes+':'+seconds;
+    if (minutes < 10) { minutes = "0" + minutes; }
+    if (seconds < 10) { seconds = "0" + seconds; }
+    if (seconds % 1 == 0) { seconds = seconds + ".0" }
+    return minutes + ':' + seconds;
 }
 
-function resetRace() {
-    clearLapTable(document.getElementById('lapTable'))
-    disableSave()
-    ws.send("RACE RESET")
+function resetRace(notify = true) {
+    if (startBtn.innerHTML === "Start") {
+        clearLapTable(document.getElementById('lapTable'))
+        disableSave()
+
+        if (notify) {
+            ws.send("RACE RESET")
+        }
+    }
 }
 
 function enableSave() {
@@ -175,7 +201,7 @@ function canSave() {
         if (!data.race.raceObj.running) { // if we are not running
             return true;
         }
-    } 
+    }
 
     return false
 }
@@ -189,7 +215,7 @@ function saveRace() {
             saveData.unshift([
                 lapData.name,
                 lapData.lapNum,
-                lapData.lapTime/1000
+                lapData.lapTime / 1000
             ])
         });
 
@@ -201,7 +227,7 @@ function saveRace() {
 
 function updateStandings(standings) {
     var rowDiv = document.getElementById("standingsDiv")
-    
+
     standings.standings.forEach((standing, position) => {
         var pre = getBoxPrefixFromName(standing.name)
         var toMove = document.getElementById(pre + "Card")
@@ -214,15 +240,15 @@ function updateStandings(standings) {
             insertAfter(rowDiv, toMove, refChild)
         }
 
-        document.getElementById(pre+"Pos").textContent = position + 1
+        document.getElementById(pre + "Pos").textContent = position + 1
     })
 }
 
 function getBoxPrefixFromName(name) {
     var found = ""
 
-    for (var i=0; i <4; i++) {
-        if (data.pilots[i].name === name ) {
+    for (var i = 0; i < 4; i++) {
+        if (data.pilots[i].name === name) {
             found = i
         }
     }
@@ -235,7 +261,7 @@ function getBoxPrefixFromName(name) {
         case 2:
             return "p3"
         case 3:
-            return "p4"   
+            return "p4"
     }
 }
 

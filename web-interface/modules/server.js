@@ -12,6 +12,24 @@ class Server extends EventEmitter {
         // HTTP
         app.use(express.static('web'))
 
+
+        app.get('/dnf/:pID', (req, res) => {
+            this.emit("DNF", [req.params.pID]);
+            res.send(req.params.pID)
+        })
+        app.get('/start', (req, res) => {
+            this.emit("start");
+            res.send("start")
+        })
+        app.get('/stop', (req, res) => {
+            this.emit("stop");
+            res.send("stop")
+        })
+        app.get('/reset', (req, res) => {
+            this.emit("reset");
+            res.send("reset")
+        })
+
         var server = app.listen(port, function () {
             console.log('Server listening on port: ' + port)
         })

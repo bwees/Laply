@@ -13,6 +13,7 @@ class Race extends EventEmitter {
             datatype: "lapTable",
             table: []
         }
+        this.dnfs = [false, false, false, false]
         this.bestTimes = [-1,-1,-1,-1]
         this.lapTimers = [new Timer(), new Timer(), new Timer(), new Timer()]
     }
@@ -68,20 +69,31 @@ class Race extends EventEmitter {
         }
     }
 
-    async updateStandings() {
+    updateStandings() {
         var standings = []
 
         for (i = 0; i < 4; i++) {
             standings.push({
                 name: this.pilots[i].name,
                 num: this.laps[i].length,
-                time: this.laps[i][this.laps[i].length - 1] || 0
+                time: this.laps[i][this.laps[i].length - 1] || 0,
+                isDNF: this.dnfs[i]
             })
         }
 
-        standings.sort(function (a, b) {
+        var noDNF = standings.filter(item => item.isDNF == false)
+        var yesDNF = standings.filter(item => item.isDNF)
+
+        noDNF.sort(function (a, b) {
             return b.num - a.num || a.time - b.time;
         });
+
+        yesDNF.sort(function (a,b) {
+            return a.num - b.num || b.time - a.time;
+        })
+
+        standings = noDNF.concat(yesDNF)
+        
 
         this.emit("standings", {datatype: "standings", standings: standings})
     }

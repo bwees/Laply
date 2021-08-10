@@ -27,7 +27,7 @@ var data = {
         minTime: 10000,
         raceObj: null,
         lapTable: null,
-        standings: null
+        standings: null,
     },
     rssi: [0, 0, 0, 0]
 }
@@ -143,55 +143,15 @@ server.on("RACE", (params) => {
             break
 
         case "START":
-            setTimeout(() => {
-                data.race.raceObj = new Race(data.race.laps)
-                data.race.raceObj.running = true
-                data.race.raceObj.on("lap", (lapTable) => {
-                    server.broadcast(JSON.stringify(lapTable))
-                    data.race.lapTable = lapTable
-                })
-                data.race.raceObj.on("tick", (timerData) => {
-                    server.broadcast(JSON.stringify(timerData))
-                })
-                data.race.raceObj.on("standings", (standings) => {
-                    server.broadcast(JSON.stringify(standings))
-                    data.race.standings = standings
-                })
-                data.race.raceObj.on("newBest", (newBest) => {
-                    server.broadcast(JSON.stringify(newBest))
-                })
-
-                // Start Timers for all drones
-
-                data.pilots.forEach((pilot, index) => {
-                    if (pilot.name != "") {
-                        data.race.raceObj.recordLap(index, data.race.minTime);
-                    }
-                })
-
-                updateClients()
-            }, (data.race.beeps * 1000) + 1000)
-
+            startRace()
             break
 
         case "STOP":
-            if (data.race) {
-                data.race.raceObj.running = false
-                data.race.raceObj.stopTimers()
-            }
+            stopRace()
             break
 
         case "RESET":
-            data.race.lapTable = null
-            data.race.standings = null
-
-            data.race.raceObj = new Race(data.race.laps)
-            var resetStandings = data.race.raceObj.resetStandings(data.pilots)
-            server.broadcast(JSON.stringify(resetStandings))
-
-            for (var i = 0; i < 4; i++) {
-                server.broadcast(JSON.stringify({ datatype: "timerTick", pilot: i, time: 0 }))
-            }
+            resetRace()
             break
     }
     updateClients()
@@ -205,6 +165,28 @@ server.on("DATA", () => {
     if (data.race.lapTable) {
         server.broadcast(JSON.stringify(data.race.lapTable))
     }
+})
+
+server.on("DNF", (params) => {
+    if (data.race.raceObj) {
+        console.log("DNF: " + params[0])
+        data.race.raceObj.dnfs[params[0]-1] = true
+        data.race.raceObj.lapTimers[params[0]-1].stop()
+        data.race.raceObj.updateStandings()
+    }
+})
+
+server.on("start", () => {
+    startRace()
+    server.broadcast(JSON.stringify({datatype: "raceOperation", operation: "start"}))
+})
+server.on("stop", () => {
+    stopRace()
+    server.broadcast(JSON.stringify({datatype: "raceOperation", operation: "stop"}))
+})
+server.on("reset", () => {
+    resetRace()
+    server.broadcast(JSON.stringify({datatype: "raceOperation", operation: "reset"}))
 })
 
 function getPortsList() {
@@ -240,3 +222,56 @@ const getCircularReplacer = () => {
         return value;
     };
 };
+
+function startRace() {
+    setTimeout(() => {
+        data.race.raceObj = new Race(data.race.laps)
+        data.race.raceObj.running = true
+        data.race.raceObj.on("lap", (lapTable) => {
+            server.broadcast(JSON.stringify(lapTable))
+            data.race.lapTable = lapTable
+        })
+        data.race.raceObj.on("tick", (timerData) => {
+            server.broadcast(JSON.stringify(timerData))
+        })
+        data.race.raceObj.on("standings", (standings) => {
+            server.broadcast(JSON.stringify(standings))
+            data.race.standings = standings
+        })
+        data.race.raceObj.on("newBest", (newBest) => {
+            server.broadcast(JSON.stringify(newBest))
+        })
+
+        // Start Timers for all drones
+
+        data.pilots.forEach((pilot, index) => {
+            if (pilot.name != "") {
+                data.race.raceObj.recordLap(index, data.race.minTime);
+            }
+        })
+
+        updateClients()
+    }, (data.race.beeps * 1000) + 1000)
+}
+
+function stopRace() {
+    if (data.race) {
+        data.race.raceObj.running = false
+        data.race.raceObj.stopTimers()
+    }
+}
+
+function resetRace() {
+    if (data.race.raceObj.running == false) {
+        data.race.lapTable = null
+        data.race.standings = null
+    
+        data.race.raceObj = new Race(data.race.laps)
+        var resetStandings = data.race.raceObj.resetStandings(data.pilots)
+        server.broadcast(JSON.stringify(resetStandings))
+    
+        for (var i = 0; i < 4; i++) {
+            server.broadcast(JSON.stringify({ datatype: "timerTick", pilot: i, time: 0 }))
+        }
+    }
+}
