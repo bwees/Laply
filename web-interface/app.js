@@ -89,7 +89,6 @@ server.on("SERIAL", async (params) => {
 
             data.serial.connection.on('data', function (message) {
                 data.serial.status = true
-                updateClients()
 
                 message = message.toString()
                 if (message.includes("RSSI")) {
@@ -161,6 +160,15 @@ server.on("RACE", (params) => {
                 data.race.raceObj.on("newBest", (newBest) => {
                     server.broadcast(JSON.stringify(newBest))
                 })
+
+                // Start Timers for all drones
+
+                data.pilots.forEach((pilot, index) => {
+                    if (pilot.name != "") {
+                        data.race.raceObj.recordLap(index, data.race.minTime);
+                    }
+                })
+
                 updateClients()
             }, (data.race.beeps * 1000) + 1000)
 

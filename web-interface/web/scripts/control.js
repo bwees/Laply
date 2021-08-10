@@ -247,6 +247,7 @@ function insertAfter(element, newNode, existingNode) {
 // CSV EXPORT 
 
 function exportToCsv(filename, rows) {
+    copyTotalTimes()
     var processRow = function (row) {
         var finalVal = '';
         for (var j = 0; j < row.length; j++) {
@@ -283,4 +284,8 @@ function exportToCsv(filename, rows) {
             document.body.removeChild(link);
         }
     }
+}
+
+function copyTotalTimes() {
+    console.log(data.race.standings)
 }

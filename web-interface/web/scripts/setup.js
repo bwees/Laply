@@ -19,6 +19,8 @@ rssiValInterval = 0
 ws.onmessage = function (event) {
 
     if (JSON.parse(event.data).datatype === "settings") {
+        var nameUpdate = data == null
+
         data = JSON.parse(event.data)
         // Port Selection
         var portSelector = document.getElementById("devicePort")
@@ -80,19 +82,23 @@ ws.onmessage = function (event) {
         raceMinTime.value = data.race.minTime/1000
 
         // Pilot Info
-        //document.getElementById("pilot1Name").value = data.pilots[0].name
+
+        if (nameUpdate) {
+            document.getElementById("pilot1Name").value = data.pilots[0].name
+            document.getElementById("pilot2Name").value = data.pilots[1].name
+            document.getElementById("pilot3Name").value = data.pilots[2].name
+            document.getElementById("pilot4Name").value = data.pilots[3].name
+        }
+
         document.getElementById("pilot1Freq").value = data.pilots[0].frequency
         document.getElementById("pilot1Thresh").value = data.pilots[0].rssi
 
-        //document.getElementById("pilot2Name").value = data.pilots[1].name
         document.getElementById("pilot2Freq").value = data.pilots[1].frequency
         document.getElementById("pilot2Thresh").value = data.pilots[1].rssi
 
-        //document.getElementById("pilot3Name").value = data.pilots[2].name
         document.getElementById("pilot3Freq").value = data.pilots[2].frequency
         document.getElementById("pilot3Thresh").value = data.pilots[2].rssi
 
-        //document.getElementById("pilot4Name").value = data.pilots[3].name
         document.getElementById("pilot4Freq").value = data.pilots[3].frequency
         document.getElementById("pilot4Thresh").value = data.pilots[3].rssi
 
