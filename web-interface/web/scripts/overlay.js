@@ -59,8 +59,8 @@ ws.onmessage = function (event) {
     } else if (JSON.parse(event.data).datatype === "standings") {
         var standings = JSON.parse(event.data)
         data.race.standings = standings.standings
-        console.log("STANDINGS")
         updateStandings(standings)
+        
     } else if (JSON.parse(event.data).datatype === "newBest") {
         var bestData = JSON.parse(event.data)
 
