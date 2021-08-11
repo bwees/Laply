@@ -139,15 +139,6 @@ function stopProcess() {
 }
 
 function startProcess() {
-    let synth = new Tone.Synth().toMaster();
-
-    const now = Tone.now();
-    for (i = 0; i < data.race.beeps; i++) {
-        synth.triggerAttackRelease("440", "8n", now + i);
-    }
-
-    synth.triggerAttackRelease("600", "8n", now + data.race.beeps);
-
     startBtn.classList.remove("btn-success");
     startBtn.classList.add("btn-danger");
     startBtn.innerHTML = "Stop";
