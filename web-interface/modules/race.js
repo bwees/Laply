@@ -69,7 +69,7 @@ class Race extends EventEmitter {
         }
     }
 
-    updateStandings() {
+    updateStandings(triggerPilot, tpIndex) {
         var standings = []
 
         for (i = 0; i < 4; i++) {
@@ -94,7 +94,6 @@ class Race extends EventEmitter {
 
         standings = noDNF.concat(yesDNF)
         
-
         this.emit("standings", {datatype: "standings", standings: standings})
     }
 

@@ -14,6 +14,14 @@ startBtn = document.getElementById("startRace")
 
 var firstRun = true
 
+var positions = []
+
+document.addEventListener("DOMContentLoaded", function() {
+    for (var i=1; i<=4; i++) {
+        positions.push(document.getElementById("p"+i+"Card").getBoundingClientRect())
+    }
+});
+
 ws.onmessage = function (event) {
     if (JSON.parse(event.data).datatype === "settings") {
         data = JSON.parse(event.data)
@@ -216,8 +224,39 @@ function saveRace() {
 }
 
 function updateStandings(standings) {
-    var rowDiv = document.getElementById("standingsDiv")
+    
+    console.log("UPDATATAT")
 
+    standings.standings.forEach((standing, index) => {
+        var prefix = getBoxPrefixFromName(standing.name)
+        moveToPosition(document.getElementById(prefix+"Card"), positions[index])
+    })
+
+    setTimeout(() => solidifyStandings(standings), 600)
+}
+
+async function moveToPosition(toMove, ref) {
+    const offset = {
+        x: null,
+        y: null,
+    };
+
+    toMove.classList.add('transition');
+
+    offset.x = ref.left - toMove.getBoundingClientRect().left
+    offset.y = ref.top - toMove.getBoundingClientRect().top
+
+
+    toMove.style.transform = `translate(${offset.x}px, ${offset.y}px)`;
+
+    setTimeout(() => {            
+        toMove.classList.remove('transition');
+        toMove.removeAttribute('style');
+    }, 600);
+}
+
+function solidifyStandings(standings) {
+    var rowDiv = document.getElementById("standingsDiv")
     standings.standings.forEach((standing, position) => {
         var pre = getBoxPrefixFromName(standing.name)
         var toMove = document.getElementById(pre + "Card")
@@ -230,7 +269,7 @@ function updateStandings(standings) {
             insertAfter(rowDiv, toMove, refChild)
         }
 
-        document.getElementById(pre + "Pos").textContent = position + 1
+        document.getElementById(pre+"Pos").textContent = position + 1
     })
 }
 

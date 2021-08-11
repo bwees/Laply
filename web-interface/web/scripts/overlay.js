@@ -9,6 +9,16 @@ startBtn = document.getElementById("startRace")
 
 var firstRun = true
 
+var data = {}
+
+var positions = []
+
+document.addEventListener("DOMContentLoaded", function() {
+    for (var i=1; i<=4; i++) {
+        positions.push(document.getElementById("p"+i+"Card").getBoundingClientRect())
+    }
+});
+
 ws.onmessage = function (event) {
     if (JSON.parse(event.data).datatype === "settings") {
         data = JSON.parse(event.data)
@@ -18,7 +28,6 @@ ws.onmessage = function (event) {
         document.getElementById("p2Name").textContent = data.pilots[1].name
         document.getElementById("p3Name").textContent = data.pilots[2].name
         document.getElementById("p4Name").textContent = data.pilots[3].name
-
 
     } else if (JSON.parse(event.data).datatype === "timerTick") {
         var timerData = JSON.parse(event.data)
@@ -44,12 +53,13 @@ ws.onmessage = function (event) {
     } else if (JSON.parse(event.data).datatype === "standings") {
         var standings = JSON.parse(event.data)
         data.race.standings = standings.standings
+        console.log("STANDINGS")
         updateStandings(standings)
     } else if (JSON.parse(event.data).datatype === "newBest") {
         var bestData = JSON.parse(event.data)
 
         var pre = getBoxPrefixFromName(bestData.pilot)
-        document.getElementById(pre + "Best").textContent = (bestData.time == -1 ? "BEST: --:--.-" : "BEST: " + secsFormat(bestData.time/1000))
+        document.getElementById(pre + "Best").textContent = (bestData.time == -1 ? "BEST: --:--.-" : "BEST: " + secsFormat(bestData.time / 1000))
     } else if (JSON.parse(event.data).datatype === "raceOperation" && JSON.parse(event.data).operation === "reset") {
         document.getElementById("p1Best").textContent = "BEST: --:--.-"
         document.getElementById("p2Best").textContent = "BEST: --:--.-"
@@ -58,8 +68,37 @@ ws.onmessage = function (event) {
     }
 }
 
-
 function updateStandings(standings) {
+    
+    standings.standings.forEach((standing, index) => {
+        var prefix = getBoxPrefixFromName(standing.name)
+        moveToPosition(document.getElementById(prefix+"Card"), positions[index])
+    })
+
+    setTimeout(() => solidifyStandings(standings), 600)
+}
+
+async function moveToPosition(toMove, ref) {
+    const offset = {
+        x: null,
+        y: null,
+    };
+
+    toMove.classList.add('transition');
+
+    offset.x = ref.left - toMove.getBoundingClientRect().left
+    offset.y = ref.top - toMove.getBoundingClientRect().top
+
+
+    toMove.style.transform = `translate(${offset.x}px, ${offset.y}px)`;
+
+    setTimeout(() => {            
+        toMove.classList.remove('transition');
+        toMove.removeAttribute('style');
+    }, 600);
+}
+
+function solidifyStandings(standings) {
     var rowDiv = document.getElementById("standingsDiv")
     standings.standings.forEach((standing, position) => {
         var pre = getBoxPrefixFromName(standing.name)
@@ -80,8 +119,8 @@ function updateStandings(standings) {
 function getBoxPrefixFromName(name) {
     var found = ""
 
-    for (var i=0; i <4; i++) {
-        if (data.pilots[i].name === name ) {
+    for (var i = 0; i < 4; i++) {
+        if (data.pilots[i].name === name) {
             found = i
         }
     }
@@ -94,7 +133,7 @@ function getBoxPrefixFromName(name) {
         case 2:
             return "p3"
         case 3:
-            return "p4"   
+            return "p4"
     }
 }
 
@@ -107,21 +146,21 @@ function getPaceText(pilotName) {
     if (!data.race.standings) return ""
     var standing = data.race.standings.filter(record => record.name == pilotName)[0]
     var position = data.race.standings.indexOf(standing)
-    
+
     var leaderPace = data.race.standings[0].time
-    if (position==0 || (standing.time - leaderPace) <= 0) return ""
+    if (position == 0 || (standing.time - leaderPace) <= 0) return ""
     return "PACE: +" + Math.round(((standing.time - leaderPace) / 1000) * 10) / 10 + "s"
 }
 
 function secsFormat(secs) {
-    var hours   = Math.floor(secs / 3600);
+    var hours = Math.floor(secs / 3600);
     var minutes = Math.floor((secs - (hours * 3600)) / 60);
     var seconds = secs - (hours * 3600) - (minutes * 60);
 
     seconds = Math.round(seconds * 10) / 10
 
-    if (minutes < 10) {minutes = "0"+minutes;}
-    if (seconds < 10) {seconds = "0"+seconds;}
-    if (seconds % 1 == 0) {seconds = seconds+".0"}
-    return minutes+':'+seconds;
+    if (minutes < 10) { minutes = "0" + minutes; }
+    if (seconds < 10) { seconds = "0" + seconds; }
+    if (seconds % 1 == 0) { seconds = seconds + ".0" }
+    return minutes + ':' + seconds;
 }
