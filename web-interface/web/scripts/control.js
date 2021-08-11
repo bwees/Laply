@@ -18,7 +18,6 @@ ws.onmessage = function (event) {
     if (JSON.parse(event.data).datatype === "settings") {
         data = JSON.parse(event.data)
 
-
         // Pilot Names
         document.getElementById("p1Name").textContent = data.pilots[0].name
         document.getElementById("p2Name").textContent = data.pilots[1].name
@@ -111,7 +110,7 @@ ws.onmessage = function (event) {
                 stopProcess()
                 break
             case "reset":
-                resetRace(false)
+                resetRace()
                 break
         }
     }
@@ -120,11 +119,9 @@ ws.onmessage = function (event) {
 function startRace() {
 
     if (startBtn.innerHTML === "Start") {
-        startProcess()
 
         ws.send("RACE START")
     } else if (startBtn.innerHTML = "Stop") {
-        stopProcess()
 
         ws.send("RACE STOP")
     }
@@ -177,14 +174,10 @@ function secsFormat(secs) {
     return minutes + ':' + seconds;
 }
 
-function resetRace(notify = true) {
+function resetRace() {
     if (startBtn.innerHTML === "Start") {
         clearLapTable(document.getElementById('lapTable'))
         disableSave()
-
-        if (notify) {
-            ws.send("RACE RESET")
-        }
     }
 }
 

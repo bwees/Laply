@@ -178,15 +178,12 @@ server.on("DNF", (params) => {
 
 server.on("start", () => {
     startRace()
-    server.broadcast(JSON.stringify({datatype: "raceOperation", operation: "start"}))
 })
 server.on("stop", () => {
     stopRace()
-    server.broadcast(JSON.stringify({datatype: "raceOperation", operation: "stop"}))
 })
 server.on("reset", () => {
     resetRace()
-    server.broadcast(JSON.stringify({datatype: "raceOperation", operation: "reset"}))
 })
 
 function getPortsList() {
@@ -252,6 +249,7 @@ function startRace() {
 
         updateClients()
     }, (data.race.beeps * 1000) + 1000)
+    server.broadcast(JSON.stringify({datatype: "raceOperation", operation: "start"}))
 }
 
 function stopRace() {
@@ -259,6 +257,7 @@ function stopRace() {
         data.race.raceObj.running = false
         data.race.raceObj.stopTimers()
     }
+    server.broadcast(JSON.stringify({datatype: "raceOperation", operation: "stop"}))
 }
 
 function resetRace() {
@@ -273,5 +272,7 @@ function resetRace() {
         for (var i = 0; i < 4; i++) {
             server.broadcast(JSON.stringify({ datatype: "timerTick", pilot: i, time: 0 }))
         }
+        
+        server.broadcast(JSON.stringify({datatype: "raceOperation", operation: "reset"}))
     }
 }
