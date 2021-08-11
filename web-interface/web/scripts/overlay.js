@@ -17,7 +17,13 @@ document.addEventListener("DOMContentLoaded", function() {
     for (var i=1; i<=4; i++) {
         positions.push(document.getElementById("p"+i+"Card").getBoundingClientRect())
     }
-});
+})
+
+window.addEventListener('resize', function() {
+    for (var i=1; i<=4; i++) {
+        positions.push(document.getElementById("p"+i+"Card").getBoundingClientRect())
+    }
+})
 
 ws.onmessage = function (event) {
     if (JSON.parse(event.data).datatype === "settings") {
