@@ -238,6 +238,20 @@ function startRace() {
         data.race.raceObj.on("newBest", (newBest) => {
             server.broadcast(JSON.stringify(newBest))
         })
+        data.race.raceObj.on("checkStop", () => {
+            var shouldStopRace = true
+
+            for (let timer of data.race.raceObj.lapTimers) {
+                if (timer.running) {
+                    shouldStopRace = true
+                    break
+                }
+            }
+
+            if (shouldStopRace) {
+                stopRace()
+            }
+        })
 
         // Start Timers for all drones
 

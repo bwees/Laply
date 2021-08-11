@@ -26,6 +26,7 @@ class Race extends EventEmitter {
                     this.recordLap(index, minTime);
                 } else {
                     this.lapTimers[index].stop()
+                    this.emit("checkStop")
                 }
             }
         }
