@@ -169,6 +169,12 @@ function resetRace() {
     if (startBtn.innerHTML === "Start") {
         clearLapTable(document.getElementById('lapTable'))
         disableSave()
+
+        document.getElementById("p1Best").textContent = "BEST: --:--.-"
+        document.getElementById("p2Best").textContent = "BEST: --:--.-"
+        document.getElementById("p3Best").textContent = "BEST: --:--.-"
+        document.getElementById("p4Best").textContent = "BEST: --:--.-"
+
     }
 }
 

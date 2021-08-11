@@ -50,6 +50,11 @@ ws.onmessage = function (event) {
 
         var pre = getBoxPrefixFromName(bestData.pilot)
         document.getElementById(pre + "Best").textContent = (bestData.time == -1 ? "BEST: --:--.-" : "BEST: " + secsFormat(bestData.time/1000))
+    } else if (JSON.parse(event.data).datatype === "raceOperation" && JSON.parse(event.data).operation === "reset") {
+        document.getElementById("p1Best").textContent = "BEST: --:--.-"
+        document.getElementById("p2Best").textContent = "BEST: --:--.-"
+        document.getElementById("p3Best").textContent = "BEST: --:--.-"
+        document.getElementById("p4Best").textContent = "BEST: --:--.-"
     }
 }
 
