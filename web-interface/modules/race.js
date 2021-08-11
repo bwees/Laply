@@ -89,7 +89,7 @@ class Race extends EventEmitter {
         });
 
         yesDNF.sort(function (a,b) {
-            return a.num - b.num || b.time - a.time;
+            return b.num - a.num;
         })
 
         standings = noDNF.concat(yesDNF)
