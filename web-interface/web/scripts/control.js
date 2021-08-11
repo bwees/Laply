@@ -232,9 +232,6 @@ function saveRace() {
 }
 
 function updateStandings(standings) {
-    
-    console.log("UPDATATAT")
-
     standings.standings.forEach((standing, index) => {
         var prefix = getBoxPrefixFromName(standing.name)
         moveToPosition(document.getElementById(prefix+"Card"), positions[index])
@@ -310,7 +307,6 @@ function insertAfter(element, newNode, existingNode) {
 // CSV EXPORT 
 
 function exportToCsv(filename, rows) {
-    copyTotalTimes()
     var processRow = function (row) {
         var finalVal = '';
         for (var j = 0; j < row.length; j++) {
@@ -349,6 +345,12 @@ function exportToCsv(filename, rows) {
     }
 }
 
-function copyTotalTimes() {
-    console.log(data.race.standings)
+function copyRace() {
+    var order = ["p1", "p2", "p3", "p4"]
+    var final = ""
+    order.forEach(pre => {
+        final += (1+data.race.standings.indexOf(data.race.standings.filter(obj => getBoxPrefixFromName(obj.name) == pre)[0])) + "\n"
+    })
+    
+    navigator.clipboard.writeText(final)
 }
