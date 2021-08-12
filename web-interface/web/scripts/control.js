@@ -44,7 +44,6 @@ ws.onmessage = function (event) {
         if (firstRun) {
             firstRun = false
             if (data.race.raceObj) {
-                console.log(data.race.raceObj.running)
                 if (data.race.raceObj.running) {
                     startBtn.classList.remove("btn-success");
                     startBtn.classList.add("btn-danger");
@@ -352,5 +351,18 @@ function copyRace() {
         final += (1+data.race.standings.indexOf(data.race.standings.filter(obj => getBoxPrefixFromName(obj.name) == pre)[0])) + "\n"
     })
     
-    navigator.clipboard.writeText(final)
+    let textArea = document.createElement("textarea");
+    textArea.value = final;
+    // make the textarea out of viewport
+    textArea.style.position = "fixed";
+    textArea.style.left = "-999999px";
+    textArea.style.top = "-999999px";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    return new Promise((res, rej) => {
+        // here the magic happens
+        document.execCommand('copy') ? res() : rej();
+        textArea.remove();
+    });
 }
