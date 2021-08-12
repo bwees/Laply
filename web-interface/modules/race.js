@@ -20,6 +20,9 @@ class Race extends EventEmitter {
 
     handleRssi(index, rssi, pilots, minTime) {
         this.pilots = pilots
+        
+        if (this.pilots[index].name == "") return // Ignore disabled names
+
         if (this.running) {
             if (rssi > this.pilots[index].rssi) { // If peak detected
                 if (this.laps[index].length < this.numLaps) { // If pilot has not finished the max laps
