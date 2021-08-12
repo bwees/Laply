@@ -192,5 +192,9 @@ document.addEventListener('paste', (event) => {
             }
             p++;
         })
+        setPilot1Info()
+        setPilot2Info()
+        setPilot3Info()
+        setPilot4Info()
     } 
 });
